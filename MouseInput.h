@@ -25,6 +25,9 @@ public:
     bool ButtonDown(MouseButtonCode key) const { return _inputMap.at(key)->_inputData.ButtonDown(); };
     bool ButtonBeingPressed(MouseButtonCode key) const { return _inputMap.at(key)->_inputData.ButtonBeingPressed(); };
     
+    //左クリックがダブルクリックされたかどうか
+    bool DoubleClicked() const { return _hasDoubleClicked; };
+    
     ButtonTypeInput *GetButton(MouseButtonCode button) { return &_inputMap.at(button)->_inputData; }
     MouseTypeInputEvent *GetEvent(MouseButtonCode key) { return &_inputMap.at(key)->_inputEvents; }
     
@@ -37,6 +40,8 @@ private:
     void Update();
     void Clear();
     void SetWindow(GLFWwindow *window) { _window = window; };
+    
+    void UpdateDoubleClickStaet();
     
     struct MouseData
     {
@@ -61,6 +66,11 @@ private:
     std::unordered_map<MouseButtonCode, MouseData *> _inputMap;
     std::vector<MouseData *> _inputs;
     GLFWwindow* _window;
+    
+    //ダブルクリック検出用
+    bool _hasClicked;
+    bool _hasDoubleClicked;
+    int _countFromFirst;
 };
 
 #define MOUSE MouseInput::GetInstance()

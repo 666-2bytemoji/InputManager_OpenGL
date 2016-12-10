@@ -51,6 +51,45 @@ void MouseInput::Update()
         MouseTypeInputEvent &events = input->_inputEvents;
         events.Update(cursorPos);
     }
+    
+    UpdateDoubleClickStaet();
+}
+
+
+void MouseInput::UpdateDoubleClickStaet()
+{
+    _hasDoubleClicked = false;
+    
+    //ダブルクリック検出
+    if (_hasClicked)
+        _countFromFirst++;
+    
+    if (ButtonDown(MouseInput::MouseButtonCode::MOUSE_L))
+    {
+        //初回クリック見検出なら
+        if (!_hasClicked)
+        {
+            _hasClicked = true;
+            _countFromFirst = 0;
+        }
+        //規定フレーム内にクリックを検出してるなら
+        else if (_countFromFirst < 30)
+        {
+            _hasDoubleClicked = true;
+            
+            //カウントリセット
+            _hasClicked = false;
+            _countFromFirst = 0;
+            return;
+        }
+    }
+    
+    //カウントリセット
+    if (_countFromFirst == 30)
+    {
+        _hasClicked = false;
+        _countFromFirst = 0;
+    }
 }
 
 
