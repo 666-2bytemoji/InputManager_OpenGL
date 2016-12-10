@@ -31,6 +31,8 @@ public:
     ButtonTypeInput *GetButton(MouseButtonCode button) { return &_inputMap.at(button)->_inputData; }
     MouseTypeInputEvent *GetEvent(MouseButtonCode key) { return &_inputMap.at(key)->_inputEvents; }
     
+    Vector2D GetCursorPos() const { return _cursorPos; };
+    
 private:
     
     MouseInput();
@@ -67,10 +69,12 @@ private:
     std::vector<MouseData *> _inputs;
     GLFWwindow* _window;
     
+    Vector2D _cursorPos;
+    
     //ダブルクリック検出用
     bool _hasClicked;
     bool _hasDoubleClicked;
-    int _countFromFirst;
+    int _countFromFirstClick;
 };
 
 #define MOUSE MouseInput::GetInstance()

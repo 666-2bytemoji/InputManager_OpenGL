@@ -5,6 +5,10 @@
 #include <GLFW/glfw3.h>
 
 MouseInput::MouseInput()
+: _hasDoubleClicked(false)
+, _hasClicked(false)
+, _countFromFirstClick(0)
+, _window(nullptr)
 {
     RegistRecords();
 }
@@ -38,18 +42,17 @@ void MouseInput::Update()
     //イベントを取り出す
     //glfwPollEvents();
     
-    Vector2D cursorPos;
-    glfwGetCursorPos(_window, &cursorPos._x, &cursorPos._y);
+    glfwGetCursorPos(_window, &_cursorPos._x, &_cursorPos._y);
     
     for (auto input : _inputs)
     {
         ButtonTypeInput &data = input->_inputData;
         data.UpdateState(glfwGetMouseButton(_window, input->_inputCode) != GLFW_RELEASE);
-        cursorPos._y *= -1;
-        cursorPos._y += WINDOW_HEIGHT;
+        _cursorPos._y *= -1;
+        _cursorPos._y += WINDOW_HEIGHT;
         
         MouseTypeInputEvent &events = input->_inputEvents;
-        events.Update(cursorPos);
+        events.Update(_cursorPos);
     }
     
     UpdateDoubleClickStaet();
@@ -62,7 +65,7 @@ void MouseInput::UpdateDoubleClickStaet()
     
     //ダブルクリック検出
     if (_hasClicked)
-        _countFromFirst++;
+        _countFromFirstClick++;
     
     if (ButtonDown(MouseInput::MouseButtonCode::MOUSE_L))
     {
@@ -70,25 +73,25 @@ void MouseInput::UpdateDoubleClickStaet()
         if (!_hasClicked)
         {
             _hasClicked = true;
-            _countFromFirst = 0;
+            _countFromFirstClick = 0;
         }
         //規定フレーム内にクリックを検出してるなら
-        else if (_countFromFirst < 30)
+        else if (_countFromFirstClick < 30)
         {
             _hasDoubleClicked = true;
             
             //カウントリセット
             _hasClicked = false;
-            _countFromFirst = 0;
+            _countFromFirstClick = 0;
             return;
         }
     }
     
     //カウントリセット
-    if (_countFromFirst == 30)
+    if (_countFromFirstClick == 30)
     {
         _hasClicked = false;
-        _countFromFirst = 0;
+        _countFromFirstClick = 0;
     }
 }
 
