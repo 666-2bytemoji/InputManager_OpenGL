@@ -38,18 +38,17 @@ void MouseInput::Update()
     //イベントを取り出す
     //glfwPollEvents();
     
-    Vector2D cursorPos;
-    glfwGetCursorPos(_window, &cursorPos._x, &cursorPos._y);
+    glfwGetCursorPos(_window, &_cursorPos._x, &_cursorPos._y);
     
     for (auto input : _inputs)
     {
         ButtonTypeInput &data = input->_inputData;
         data.UpdateState(glfwGetMouseButton(_window, input->_inputCode) != GLFW_RELEASE);
-        cursorPos._y *= -1;
-        cursorPos._y += WINDOW_HEIGHT;
+        _cursorPos._y *= -1;
+        _cursorPos._y += WINDOW_HEIGHT;
         
         MouseTypeInputEvent &events = input->_inputEvents;
-        events.Update(cursorPos);
+        events.Update(_cursorPos);
     }
     
     UpdateDoubleClickStaet();
