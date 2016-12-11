@@ -2,6 +2,7 @@
 #define MouseInput_h
 
 #include <unordered_map>
+#include <memory>
 #include "Singleton.h"
 #include "ButtonTypeInput.h"
 #include "MouseTypeInputEvent.h"
@@ -21,17 +22,39 @@ public:
         MOUSE_CENTER
     };
     
-    bool ButtonUp(MouseButtonCode key) const { return _inputMap.at(key)->_inputData.ButtonUp(); };
-    bool ButtonDown(MouseButtonCode key) const { return _inputMap.at(key)->_inputData.ButtonDown(); };
-    bool ButtonBeingPressed(MouseButtonCode key) const { return _inputMap.at(key)->_inputData.ButtonBeingPressed(); };
+    //Eventの状態を確認するためのオブジェクト
+    struct MouseEvent
+    {
+        MouseEvent(std::function<void(Vector2D)>* eve
+                   , MouseButtonCode code
+                   , MouseTypeInputEvent::State state)
+        : _event(eve), _code(code), _state(state){}
+        
+        const std::function<void(Vector2D)>* _event;
+        const MouseButtonCode _code;
+        const MouseTypeInputEvent::State _state;
+    };
+    
+    //指定のボタンが各状態にあるかどうか
+    bool ButtonUp(MouseButtonCode button) const { return _inputMap.at(button)->_inputData.ButtonUp(); };
+    bool ButtonDown(MouseButtonCode button) const { return _inputMap.at(button)->_inputData.ButtonDown(); };
+    bool ButtonBeingPressed(MouseButtonCode button) const { return _inputMap.at(button)->_inputData.ButtonBeingPressed(); };
     
     //左クリックがダブルクリックされたかどうか
     bool DoubleClicked() const { return _hasDoubleClicked; };
     
-    ButtonTypeInput *GetButton(MouseButtonCode button) { return &_inputMap.at(button)->_inputData; }
-    MouseTypeInputEvent *GetEvent(MouseButtonCode key) { return &_inputMap.at(key)->_inputEvents; }
-    
+    //カーソルの座標を取得
     Vector2D GetCursorPos() const { return _cursorPos; };
+    
+    std::shared_ptr<MouseEvent> AddEvent(MouseButtonCode code, MouseTypeInputEvent::State state, std::function<void(Vector2D)> eve)
+    {
+        auto eventRef = GetEvent(code)->AddEvent(state, eve);
+        return std::make_shared<MouseEvent>(eventRef, code, state);
+    }
+    void RemoveEvent(const std::shared_ptr<MouseEvent> eventRef)
+    {
+        GetEvent(eventRef->_code)->RemoveEvent(eventRef->_state, eventRef->_event);
+    }
     
 private:
     
@@ -42,6 +65,9 @@ private:
     void Update();
     void Clear();
     void SetWindow(GLFWwindow *window) { _window = window; };
+    
+    ButtonTypeInput *GetButton(MouseButtonCode button) { return &_inputMap.at(button)->_inputData; }
+    MouseTypeInputEvent *GetEvent(MouseButtonCode button) { return &_inputMap.at(button)->_inputEvents; }
     
     void UpdateDoubleClickStaet();
     

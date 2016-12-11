@@ -2,6 +2,7 @@
 #define KeyInput_h
 
 #include <unordered_map>
+#include <memory>
 #include "../Utility/Singleton.h"
 #include "ButtonInputData.h"
 #include <GLFW/glfw3.h>
@@ -29,20 +30,31 @@ public:
         NONE
     };
     
+    //Eventの状態を確認するためのオブジェクト
+    struct KeyEvent
+    {
+        KeyEvent(std::function<void()>* eve
+                   , KeyType key
+                   , ButtonTypeInputEvent::State state)
+        : _event(eve), _key(key), _state(state){}
+        
+        const std::function<void()>* _event;
+        const KeyType _key;
+        const ButtonTypeInputEvent::State _state;
+    };
+    
     bool ButtonUp(KeyType key) const { return _inputMap.at(key)->_inputData.ButtonUp(); };
     bool ButtonDown(KeyType key) const { return _inputMap.at(key)->_inputData.ButtonDown(); };
     bool ButtonBeingPressed(KeyType key) const { return _inputMap.at(key)->_inputData.ButtonBeingPressed(); };
     
-    ButtonTypeInput *GetKey(KeyType key) { return &_inputMap.at(key)->_inputData; }
-    ButtonTypeInputEvent *GetEvent(KeyType key) { return &_inputMap.at(key)->_inputEvents; }
-
-    std::function<void()>* AddEvent(KeyType key, ButtonTypeInputEvent::ButtonState state, std::function<void()> eve)
+    std::shared_ptr<KeyEvent> AddEvent(KeyType key, ButtonTypeInputEvent::State state, std::function<void()> eve)
     {
-        return GetEvent(key)->AddEvent(state, eve);
+        auto eventRef = GetEvent(key)->AddEvent(state, eve);
+        return std::make_shared<KeyEvent>(eventRef, key, state);
     }
-    void RemoveEvent(KeyType key, ButtonTypeInputEvent::ButtonState state, std::function<void()>* eve)
+    void RemoveEvent(const std::shared_ptr<KeyEvent> eventRef)
     {
-        GetEvent(key)->RemoveEvent(state, eve);
+        GetEvent(eventRef->_key)->RemoveEvent(eventRef->_state, eventRef->_event);
     }
     
     //押されたキーを検出する
@@ -63,6 +75,9 @@ private:
     void Update();
     void Clear();
     void SetWindow(GLFWwindow *window) { _window = window; };
+    
+    ButtonTypeInput *GetKey(KeyType key) { return &_inputMap.at(key)->_inputData; }
+    ButtonTypeInputEvent *GetEvent(KeyType key) { return &_inputMap.at(key)->_inputEvents; }
     
     class KeyInputData : public ButtonInputData
     {

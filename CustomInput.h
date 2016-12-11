@@ -30,12 +30,33 @@ public:
         BUTTON9
     };
     
-    bool ButtonUp(CustomInputType key) const { return _inputMap.at(key)->_origin->_inputData.ButtonUp(); };
-    bool ButtonDown(CustomInputType key) const { return _inputMap.at(key)->_origin->_inputData.ButtonDown(); };
-    bool ButtonBeingPressed(CustomInputType key) const { return _inputMap.at(key)->_origin->_inputData.ButtonBeingPressed(); };
+    //Eventの状態を確認するためのオブジェクト
+    struct CustomInputEvent
+    {
+        CustomInputEvent(std::function<void()>* eve
+                 , CustomInputType code
+                 , ButtonTypeInputEvent::State state)
+        : _event(eve), _code(code), _state(state){}
+        
+        const std::function<void()>* _event;
+        const CustomInputType _code;
+        const ButtonTypeInputEvent::State _state;
+    };
     
-    ButtonTypeInput *GetCustomButtob(CustomInputType key) { return &_inputMap.at(key)->_origin->_inputData; }
-    ButtonTypeInputEvent *GetEvent(CustomInputType key) { return &_inputMap.at(key)->_origin->_inputEvents; }
+    bool ButtonUp(CustomInputType type) const { return _inputMap.at(type)->_origin->_inputData.ButtonUp(); };
+    bool ButtonDown(CustomInputType type) const { return _inputMap.at(type)->_origin->_inputData.ButtonDown(); };
+    bool ButtonBeingPressed(CustomInputType type) const { return _inputMap.at(type)->_origin->_inputData.ButtonBeingPressed(); };
+
+    std::shared_ptr<CustomInputEvent> AddEvent(CustomInputType type, ButtonTypeInputEvent::State state, std::function<void()> eve)
+    {
+        auto eventRef = GetEvent(type)->AddEvent(state, eve);
+        return std::make_shared<CustomInputEvent>(eventRef, type, state);
+    }
+    
+    void RemoveEvent(const std::shared_ptr<CustomInputEvent> eventRef)
+    {
+        GetEvent(eventRef->_code)->RemoveEvent(eventRef->_state, eventRef->_event);
+    }
     
     void ReplaceButtonCode(CustomInputType input, KeyInput::KeyType key);
     
@@ -46,6 +67,10 @@ private:
     
     void RegistRecords();
     void Clear();
+    
+    ButtonTypeInput *GetCustomButtob(CustomInputType type) { return &_inputMap.at(type)->_origin->_inputData; }
+    ButtonTypeInputEvent *GetEvent(CustomInputType type) { return &_inputMap.at(type)->_origin->_inputEvents; }
+    
     
     class CustomInputData
     {

@@ -11,7 +11,7 @@ class ButtonTypeInputEvent
 
 public:
 
-    enum ButtonState
+    enum class State
     {
         Pressing = 0,
         Down,
@@ -24,10 +24,10 @@ public:
     void Update();
 
     void ClearEventsAll();
-    void ClearEvents(ButtonState state);
+    void ClearEvents(State state);
     
-    Event* AddEvent(ButtonState state, Event buttonEvent);
-    void RemoveEvent(ButtonState state, Event* buttonEventPtr);
+    Event* AddEvent(State state, Event buttonEvent);
+    void RemoveEvent(const State state, const Event* buttonEventPtr);
 
 private:
     const ButtonTypeInput *_button;
