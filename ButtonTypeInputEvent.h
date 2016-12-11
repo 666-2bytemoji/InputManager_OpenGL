@@ -6,6 +6,7 @@ class ButtonTypeInput;
 
 class ButtonTypeInputEvent
 {
+    typedef std::function<void()> Event;
     typedef std::vector<std::function<void()>> Events;
 
 public:
@@ -24,7 +25,9 @@ public:
 
     void ClearEventsAll();
     void ClearEvents(ButtonState state);
-    void AddEvent(ButtonState state, std::function<void()> buttonEvent);
+    
+    Event* AddEvent(ButtonState state, Event buttonEvent);
+    void RemoveEvent(ButtonState state, Event* buttonEventPtr);
 
 private:
     const ButtonTypeInput *_button;

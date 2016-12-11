@@ -35,6 +35,15 @@ public:
     
     ButtonTypeInput *GetKey(KeyType key) { return &_inputMap.at(key)->_inputData; }
     ButtonTypeInputEvent *GetEvent(KeyType key) { return &_inputMap.at(key)->_inputEvents; }
+
+    std::function<void()>* AddEvent(KeyType key, ButtonTypeInputEvent::ButtonState state, std::function<void()> eve)
+    {
+        return GetEvent(key)->AddEvent(state, eve);
+    }
+    void RemoveEvent(KeyType key, ButtonTypeInputEvent::ButtonState state, std::function<void()>* eve)
+    {
+        GetEvent(key)->RemoveEvent(state, eve);
+    }
     
     //押されたキーを検出する
     KeyType GetInputedType() const;

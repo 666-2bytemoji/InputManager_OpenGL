@@ -77,23 +77,64 @@ void ButtonTypeInputEvent::ClearEvents(ButtonState state)
 }
 
 
-void ButtonTypeInputEvent::AddEvent(ButtonState state, std::function<void()> buttonEvent)
+ButtonTypeInputEvent::Event* ButtonTypeInputEvent::AddEvent(ButtonState state,
+                                                            ButtonTypeInputEvent::Event buttonEvent)
 {
+    Event* ptr = nullptr;
+    
     switch (state)
     {
     case ButtonTypeInputEvent::Pressing:
-        _onButtonPressing.push_back(buttonEvent);
-        break;
+            _onButtonPressing.push_back(buttonEvent);
+            ptr = &_onButtonPressing[_onButtonPressing.size() - 1];
+            break;
 
     case ButtonTypeInputEvent::Down:
-        _onButtonDown.push_back(buttonEvent);
-        break;
+            _onButtonDown.push_back(buttonEvent);
+            ptr = &_onButtonDown[_onButtonDown.size() - 1];
+            break;
 
     case ButtonTypeInputEvent::Up:
-        _onButtonUp.push_back(buttonEvent);
-        break;
+            _onButtonUp.push_back(buttonEvent);
+            ptr = &_onButtonUp[_onButtonUp.size() - 1];
+            break;
+    }
+    
+    return ptr;
+}
 
-    default:
-        break;
+
+void ButtonTypeInputEvent::RemoveEvent(ButtonState state, Event* buttonEventPtr)
+{
+    Events* events = nullptr;
+    
+    switch (state)
+    {
+        case ButtonTypeInputEvent::Pressing:
+            events = &_onButtonPressing;
+            break;
+            
+        case ButtonTypeInputEvent::Down:
+            events = &_onButtonDown;
+            break;
+            
+        case ButtonTypeInputEvent::Up:
+            events = &_onButtonUp;
+            break;
+    }
+    
+    if (events == nullptr)
+        return;
+    
+    auto it = events->begin();
+    for (size_t i=0; i<events->size() ; ++i)
+    {
+        if (&(*events)[i] == buttonEventPtr)
+        {
+            events->erase(it);
+            break;
+        }
+        
+        it++;
     }
 }
